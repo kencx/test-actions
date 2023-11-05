@@ -1,0 +1,30 @@
+---
+name: playbook
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout codebase
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        shell: bash
+        run: |
+          eval `ssh-agent -s`
+          mkdir -p /home/runner/.ssh
+          chmod 700 /home/runner/.ssh
+          echo -e "${{secrets.SSH_KEY}}" > /home/runner/.ssh/id_ed25519
+          chmod 600 /home/runner/.ssh/id_ed25519
+          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ${{secrets.SSH_HOST}} >> /home/runner/.ssh/known_hosts
+
+      - name: Run playbook
+        shell: bash
+        run: |
+          service ssh status
+          ansible-playbook --private-key /home/runner/.ssh/id_ed25519 -i ${{secrets.SSH_HOST}}, main.yml

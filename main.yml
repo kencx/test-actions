@@ -1,0 +1,7 @@
+---
+- hosts: all
+  remote_user: alpine
+  gather_facts: false
+  tasks:
+    - name: Ping host
+      ping:

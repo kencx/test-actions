@@ -1,5 +1,5 @@
 ---
-name: playbook
+name: ansible test
 
 on:
   push:
@@ -16,15 +16,13 @@ jobs:
       - name: Setup SSH
         shell: bash
         run: |
-          eval `ssh-agent -s`
-          mkdir -p /home/runner/.ssh
-          chmod 700 /home/runner/.ssh
-          echo -e "${{secrets.SSH_KEY}}" > /home/runner/.ssh/id_ed25519
-          chmod 600 /home/runner/.ssh/id_ed25519
-          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ${{secrets.SSH_HOST}} >> /home/runner/.ssh/known_hosts
+          eval $(ssh-agent -s)
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          echo "${{secrets.SSH_KEY}}" > ~/.ssh/id_ed25519
+          ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ${{secrets.SSH_HOST}} >> ~/.ssh/known_hosts
 
       - name: Run playbook
         shell: bash
         run: |
           service ssh status
-          ansible-playbook --private-key /home/runner/.ssh/id_ed25519 -i ${{secrets.SSH_HOST}}, main.yml
+          ansible-playbook --private-key ~/.ssh/id_ed25519 -i ${{secrets.SSH_HOST}}, main.yml
